@@ -1,6 +1,8 @@
+Readme · MD
+Copiar
+
 # 🌸 Sistema de Gestión de Ventas — Perfumería
  
----
  
 ## 📋 Descripción
  
@@ -13,15 +15,16 @@ Sistema web para la gestión de ventas de una tienda de perfumería. Permite a *
 Perfumeria/
 ├── Backend/
 │   ├── Routers/
-│   │   ├── Auth.py          # Login y autenticación JWT
+│   │   ├── Auth.py          # Login, registro y autenticación JWT
 │   │   ├── Pedidos.py       # CRUD de pedidos
 │   │   ├── Productos.py     # CRUD de productos / catálogo
 │   │   ├── Ventas.py        # Registro y reporte de ventas
 │   │   └── Ordenes.py       # Órdenes de compra a proveedores
-│   ├── Database.py          # Conexión a MySQL
-│   ├── Models.py            # Modelos SQLAlchemy / Pydantic
-│   ├── Main.py              # Entrada FastAPI, registro de routers
+│   ├── Database.py          # Conexión a MySQL con SQLAlchemy
+│   ├── Models.py            # Modelos SQLAlchemy y schemas Pydantic
+│   ├── Main.py              # Entrada FastAPI, CORS y registro de routers
 │   ├── .env                 # Variables de entorno (NO subir a Git)
+│   ├── venv/                # Entorno virtual Python (NO subir a Git)
 │   └── requirements.txt     # Dependencias Python
 ├── BD/
 │   └── schema.sql           # Script de creación de la base de datos
@@ -33,6 +36,8 @@ Perfumeria/
 │   ├── Gerente.html         # Panel gerente
 │   ├── Pedidos_proveedor.html
 │   └── style.css
+├── .vscode/
+│   └── settings.json        # Configuración Live Server para VS Code
 ├── .gitignore
 └── README.md
 ```
@@ -43,22 +48,25 @@ Perfumeria/
  
 Antes de clonar el proyecto asegúrate de tener instalado:
  
-| Herramienta | Versión mínima | Descarga |
+| Herramienta | Versión usada | Descarga |
 |---|---|---|
-| Python | 3.10+ | https://www.python.org/downloads/ |
+| Python | 3.12 | https://www.python.org/downloads/ |
 | MySQL Server | 8.0+ | https://dev.mysql.com/downloads/ |
+| MySQL Workbench | Cualquier versión reciente | https://dev.mysql.com/downloads/workbench/ |
 | Visual Studio Code | Cualquier versión reciente | https://code.visualstudio.com/ |
 | Git | Cualquier versión reciente | https://git-scm.com/ |
  
-> **Nota:** Solo necesitas Python instalado en el sistema para correr el backend. 
+### Extensiones de VS Code necesarias
  
+- **Live Server** (Ritwick Dey) — para abrir el frontend
+- **Python** (Microsoft) — para soporte del lenguaje
 ---
  
-## 🚀 Instalación y Configuración
+## 🚀 Instalación paso a paso
  
 ### 1. Clonar el repositorio
  
-Abre una terminal (PowerShell o la terminal integrada de VS Code) y ejecuta:
+Abre la terminal integrada de VS Code (`Ctrl+ñ`) y ejecuta:
  
 ```bash
 git clone https://github.com/Wilmer2003/Perfumeria.git
@@ -70,74 +78,84 @@ cd Perfumeria
 ### 2. Crear y activar el entorno virtual
  
 ```bash
-# Crear el entorno virtual
+cd Backend
 python -m venv venv
- 
-# Activar en Windows
-venv\Scripts\activate
- 
-# Activar en macOS/Linux
-source venv/bin/activate
 ```
  
-> En VS Code puedes seleccionar el intérprete del entorno con `Ctrl+Shift+P` → **Python: Select Interpreter** → elegir el `venv`.
+Activar en Windows (PowerShell):
+```bash
+venv\Scripts\activate
+```
+ 
+> Si aparece error de permisos en PowerShell, ejecuta primero:
+> ```bash
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+> ```
+> Luego vuelve a activar con `venv\Scripts\activate`
+ 
+Cuando está activo verás `(venv)` al inicio de la línea en la terminal.
  
 ---
  
 ### 3. Instalar dependencias
  
+Con el `(venv)` activo:
+ 
 ```bash
-cd Backend
 pip install -r requirements.txt
 ```
  
-El archivo `requirements.txt` incluye:
- 
-```
-fastapi
-uvicorn
-sqlalchemy
-pymysql
-python-dotenv
-python-jose[cryptography]
-passlib[bcrypt]
-```
+> Si `passlib` y `bcrypt` dan error de compatibilidad, ejecuta:
+> ```bash
+> pip uninstall bcrypt -y
+> pip install bcrypt==4.0.1
+> ```
  
 ---
  
-### 4. Configurar la base de datos MySQL
+### 4. Crear la base de datos en MySQL Workbench
  
-#### 4.1 Crear la base de datos
+1. Abre **MySQL Workbench** y conéctate a tu instancia local
+2. Ve a **File → Open SQL Script** y selecciona `BD/schema.sql`
+3. Presiona el rayo ⚡ para ejecutar todo el script
+Esto crea la base de datos `perfumeria` con todas las tablas y datos de prueba.
  
-Abre MySQL Workbench o la terminal de MySQL y ejecuta:
+---
  
-```sql
-CREATE DATABASE perfumeria CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+### 5. Regenerar el hash de contraseñas
  
-#### 4.2 Importar el esquema
+> Este paso es necesario porque el hash debe generarse en tu propia máquina.
+ 
+Con el `(venv)` activo en la terminal, ejecuta:
  
 ```bash
-# Desde la raíz del proyecto
-mysql -u root -p perfumeria < BD/schema.sql
+python -c "from passlib.context import CryptContext; ctx = CryptContext(schemes=['bcrypt']); print(ctx.hash('Admin123'))"
 ```
  
-O en MySQL Workbench: **File → Run SQL Script** → selecciona `BD/schema.sql`.
+Copia el hash que te genera (algo como `$2b$12$xxxx...`) y en MySQL Workbench ejecuta:
+ 
+```sql
+USE perfumeria;
+ 
+UPDATE usuarios SET contrasena = 'PEGA_TU_HASH_AQUI' WHERE correo = 'gerente@perfumeria.com';
+UPDATE usuarios SET contrasena = 'PEGA_TU_HASH_AQUI' WHERE correo = 'vendedor@perfumeria.com';
+UPDATE usuarios SET contrasena = 'PEGA_TU_HASH_AQUI' WHERE correo = 'cliente@perfumeria.com';
+```
  
 ---
  
-### 5. Configurar variables de entorno
+### 6. Configurar variables de entorno
  
-En la carpeta `Backend/` crea un archivo `.env` con el siguiente contenido:
+Crea el archivo `Backend/.env` con tus datos de MySQL:
  
 ```env
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=perfumeria
 DB_USER=root
-DB_PASSWORD=tu_contraseña_mysql
+DB_PASSWORD=tu_contraseña_de_mysql
  
-SECRET_KEY=clave_secreta_muy_larga_y_segura
+SECRET_KEY=perfumeria_clave_super_secreta_2026_upao
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
@@ -146,70 +164,119 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
  
 ---
  
-### 6. Ejecutar el backend
+### 7. Levantar el servidor backend
+ 
+Con el `(venv)` activo, estando en la carpeta `Backend/`:
  
 ```bash
-# Asegúrate de estar en la carpeta Backend/ con el venv activado
-cd Backend
 uvicorn Main:app --reload
 ```
  
-### 7. Abrir el frontend
- 
-Como el frontend es HTML puro, simplemente abre los archivos en el navegador:
- 
-- **Opción 1 (recomendada):** Instala la extensión **Live Server** en VS Code, haz clic derecho en `Login.html` → **Open with Live Server**.
-- **Opción 2:** Abre directamente el archivo `Frontend/Login.html` en Chrome, Edge o Firefox.
-> Asegúrate de que el backend esté corriendo antes de hacer login.
+Deberías ver:
+```
+INFO:     Uvicorn running on http://127.0.0.1:8000
+INFO:     Application startup complete.
+```
  
 ---
  
-## 🔐 Roles y Accesos
+### 8. Verificar que la API funciona
  
-| Rol | Credenciales de prueba | Redirige a |
-|---|---|---|
-| Cliente | Registrado en la tienda | `Catalogo.html` |
-| Vendedor | Panel administrativo | `Vendedor.html` |
-| Gerente | Panel administrativo | `Gerente.html` |
+Abre en el navegador: **http://127.0.0.1:8000/docs**
  
-> Los permisos están diferenciados por rol según **RNF-02**: el gerente accede a reportes y órdenes de compra; el vendedor solo a pedidos.
+Ahí verás la documentación automática (Swagger UI). Para probar el login:
+ 
+1. Clic en `POST /api/auth/login` → **Try it out**
+2. Pega este body y dale **Execute**:
+```json
+{
+  "correo": "gerente@perfumeria.com",
+  "contrasena": "Admin123",
+  "rol": "gerente"
+}
+```
+ 
+Respuesta esperada (código **200**):
+```json
+{
+  "access_token": "eyJhbGci...",
+  "token_type": "bearer",
+  "rol": "gerente",
+  "nombre": "Gerente Admin",
+  "id": 1
+}
+```
  
 ---
  
-## 📌 Funcionalidades Principales
+### 9. Abrir el frontend
  
-### Cliente
-- Consultar catálogo sin registrarse (RF-01)
-- Iniciar sesión y agregar productos al carrito (RF-02, RF-03)
-- Seleccionar presentación del perfume (50 ml / 80 ml) (RF-05)
-- Recibir notificación de confirmación de pedido (RF-04)
-### Vendedor
-- Gestionar estado de pedidos: Pendiente → Enviado → Entregado (RF-05 Control)
-- Ver historial de ventas
-### Gerente
-- Dashboard con reporte de ventas (exportable PDF/Excel) (RF-02 Control)
-- Generar órdenes de compra a proveedores (RF-01 Abastecimiento)
-- Recibir alertas de stock mínimo (RF-02 Abastecimiento)
-- Registrar facturas de proveedores (RF-04 Abastecimiento)
+**Opción A — Desde el explorador de Windows (más fácil):**
+1. Abre `D:\Perfumeria\Frontend\`
+2. Doble clic en `Login.html`
+**Opción B — Con Live Server en VS Code:**
+1. Crea el archivo `.vscode/settings.json` en la raíz del proyecto con:
+```json
+{
+  "liveServer.settings.root": "/Frontend",
+  "liveServer.settings.port": 5500
+}
+```
+2. Clic derecho en `Frontend/Login.html` → **Open with Live Server**
+3. Abre: **http://127.0.0.1:5500/Login.html**
 ---
  
-## 🛡️ Seguridad
+## 🔐 Usuarios de prueba
  
-- Autenticación con JWT (tokens de sesión)
-- Sesión se cierra automáticamente tras **30 minutos** de inactividad (RNF-09)
-- Contraseñas hasheadas con bcrypt
-- Validación en tiempo real de formularios (RNF-03)
+| Rol | Correo | Contraseña | Redirige a |
+|---|---|---|---|
+| Gerente | gerente@perfumeria.com | Admin123 | `Gerente.html` |
+| Vendedor | vendedor@perfumeria.com | Admin123 | `Vendedor.html` |
+| Cliente | cliente@perfumeria.com | Admin123 | `Catalogo.html` |
+ 
+---
+ 
+## 📌 Funcionalidades implementadas
+ 
+### ✅ Login (completado)
+- Pantalla de login con diseño elegante para perfumería
+- Selección de rol: Cliente, Vendedor, Gerente
+- Validación en tiempo real de campos (RNF-03)
+- Autenticación con JWT — el token se guarda en `localStorage`
+- Redirección automática según el rol del usuario (RNF-02)
+- Mensajes de error claros — credenciales incorrectas, sin conexión (RNF-10)
+- Cierre de sesión automático tras 30 minutos de inactividad (RNF-09)
+### 🔄 En desarrollo
+- Catálogo de productos (Cliente)
+- Carrito de compras y pedidos
+- Panel de Vendedor — gestión de pedidos
+- Panel de Gerente — reportes y órdenes de compra
+---
+ 
+## 🛠️ Stack tecnológico
+ 
+| Capa | Tecnología |
+|---|---|
+| Backend | Python 3.12 + FastAPI + Uvicorn |
+| ORM | SQLAlchemy 2.0 |
+| Base de datos | MySQL 8.0 |
+| Autenticación | JWT (python-jose) + bcrypt (passlib) |
+| Frontend | HTML5 + CSS3 + JavaScript vanilla |
+| Fuentes | Google Fonts (Cormorant Garamond + Jost) |
+ 
 ---
  
 ## 🌐 Compatibilidad
  
-El sistema es compatible con las versiones actuales de:
-- Google Chrome ✅
-- Microsoft Edge ✅
-- Mozilla Firefox ✅
+| Navegador | Estado |
+|---|---|
+| Google Chrome | ✅ |
+| Microsoft Edge | ✅ |
+| Mozilla Firefox | ✅ |
+ 
 ---
  
-## 🤝 Contribuir
+## 🤝 Flujo de trabajo Git
  
 ```bash
 # Crear una rama para tu feature
@@ -224,3 +291,9 @@ git push origin feature/nombre-feature
 ```
  
 Luego abre un **Pull Request** en GitHub hacia la rama `main`.
+ 
+---
+ 
+## 📄 Licencia
+ 
+Proyecto académico — UPAO 2026. Todos los derechos reservados al equipo de desarrollo.
