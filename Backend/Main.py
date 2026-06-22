@@ -7,10 +7,10 @@ from Database import engine, Base
  
 # Importar todos los routers
 from Routers.Auth import router as auth_router
-# from Routers.Productos import router as productos_router  # descomenta cuando lo crees
-# from Routers.Pedidos  import router as pedidos_router
-# from Routers.Ventas   import router as ventas_router
-# from Routers.Ordenes  import router as ordenes_router
+from Routers.Productos import router as productos_router  
+from Routers.Pedidos  import router as pedidos_router
+from Routers.Ventas   import router as ventas_router
+from Routers.Ordenes  import router as ordenes_router
  
 # Crear todas las tablas si no existen
 Base.metadata.create_all(bind=engine)
@@ -32,10 +32,10 @@ app.add_middleware(
  
 # ── Registrar routers ──────────────────────────────────────────
 app.include_router(auth_router)
-# app.include_router(productos_router)
-# app.include_router(pedidos_router)
-# app.include_router(ventas_router)
-# app.include_router(ordenes_router)
+app.include_router(productos_router)
+app.include_router(pedidos_router)
+app.include_router(ventas_router)
+app.include_router(ordenes_router)
  
 # ── Servir el frontend estático (opcional) ─────────────────────
 frontend_path = os.path.join(os.path.dirname(__file__), "..", "Frontend")

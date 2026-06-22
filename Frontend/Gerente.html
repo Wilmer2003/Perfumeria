@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel Gerente | Perfumería</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #c9a84c; --gold2: #e8c97a;
+      --dark: #1a1612; --dark2: #241f19;
+      --cream: #f5f0e8; --muted: #9a9080;
+      --success: #1e8449; --error: #c0392b;
+    }
+    body { font-family: 'Jost', sans-serif; background: #f0ebe0; color: var(--dark); min-height: 100vh; }
+
+    .navbar {
+      background: var(--dark2); padding: 14px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .navbar .logo { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--gold); }
+    .rol-badge {
+      background: rgba(201,168,76,0.15); color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.3);
+      padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; letter-spacing: 0.1em;
+    }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+    .nav-right span { color: var(--muted); font-size: 0.85rem; }
+    .btn-salir {
+      background: transparent; border: 1px solid rgba(201,168,76,0.3);
+      color: var(--muted); border-radius: 8px; padding: 7px 14px;
+      cursor: pointer; font-size: 0.82rem; font-family: 'Jost', sans-serif; transition: all 0.2s;
+    }
+    .btn-salir:hover { border-color: var(--gold); color: var(--gold); }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+
+    /* STATS */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .stat-card {
+      background: white; border-radius: 12px; padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06); text-align: center;
+    }
+    .stat-valor { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 600; color: var(--dark2); }
+    .stat-label { color: var(--muted); font-size: 0.78rem; margin-top: 4px; letter-spacing: 0.05em; }
+
+    /* TABS */
+    .tabs {
+      display: flex; gap: 4px; background: white;
+      border-radius: 10px; padding: 4px; margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); width: fit-content; flex-wrap: wrap;
+    }
+    .tab {
+      padding: 9px 18px; border: none; border-radius: 7px;
+      background: transparent; color: var(--muted);
+      font-family: 'Jost', sans-serif; font-size: 0.85rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .tab.active { background: var(--dark2); color: var(--cream); }
+
+    .card {
+      background: white; border-radius: 12px; padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px;
+    }
+    .card-title {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.3rem;
+      color: var(--dark2); margin-bottom: 18px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { border-bottom: 2px solid #f0ebe0; }
+    th { padding: 10px 14px; text-align: left; font-size: 0.78rem;
+         font-weight: 500; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+    td { padding: 12px 14px; font-size: 0.88rem; border-bottom: 1px solid #f8f5f0; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #faf8f4; }
+
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; display: inline-block; }
+    .badge-pendiente  { background: #fef3cd; color: #856404; }
+    .badge-enviado    { background: #cfe2ff; color: #084298; }
+    .badge-entregado  { background: #d1e7dd; color: #0f5132; }
+    .badge-cancelado  { background: #f8d7da; color: #842029; }
+    .badge-enviada    { background: #fef3cd; color: #856404; }
+    .badge-validada   { background: #cfe2ff; color: #084298; }
+    .badge-recibida   { background: #d1e7dd; color: #0f5132; }
+
+    .select-estado {
+      padding: 6px 10px; border: 1px solid #e0e0e0;
+      border-radius: 7px; font-family: 'Jost', sans-serif;
+      font-size: 0.82rem; background: white; cursor: pointer; outline: none;
+    }
+
+    /* ORDEN DE COMPRA FORM */
+    .form-orden {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px;
+    }
+    .field label {
+      display: block; font-size: 0.75rem; font-weight: 500;
+      color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
+    }
+    .field input, .field select {
+      width: 100%; padding: 10px 14px;
+      border: 1px solid #e0ddd8; border-radius: 8px;
+      font-family: 'Jost', sans-serif; font-size: 0.9rem; outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus, .field select:focus { border-color: var(--gold); }
+
+    .btn-gold {
+      background: var(--gold); color: var(--dark); border: none;
+      border-radius: 8px; padding: 11px 22px;
+      font-family: 'Jost', sans-serif; font-size: 0.88rem; font-weight: 500;
+      cursor: pointer; transition: background 0.2s; letter-spacing: 0.05em;
+    }
+    .btn-gold:hover { background: var(--gold2); }
+    .btn-outline {
+      background: transparent; color: var(--muted);
+      border: 1px solid #ddd; border-radius: 8px; padding: 10px 18px;
+      font-family: 'Jost', sans-serif; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+    .stock-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: #fff8f0;
+      border: 1px solid #fde8c8; border-radius: 8px; margin-bottom: 8px;
+    }
+    .stock-item-info strong { display: block; font-size: 0.9rem; }
+    .stock-item-info small { color: var(--muted); font-size: 0.78rem; }
+    .stock-num { font-size: 1.3rem; font-weight: 600; color: var(--error); font-family: 'Cormorant Garamond', serif; }
+
+    .empty { text-align: center; padding: 40px; color: var(--muted); }
+    .empty .icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--dark2); color: var(--cream);
+      padding: 12px 20px; border-radius: 10px; font-size: 0.88rem;
+      z-index: 999; border-left: 3px solid var(--gold);
+      transform: translateY(80px); opacity: 0; transition: all 0.3s; pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div style="display:flex;align-items:center;gap:14px">
+    <div class="logo">🌸 Essence & Co.</div>
+    <div class="rol-badge">GERENTE</div>
+  </div>
+  <div class="nav-right">
+    <span id="saludo"></span>
+    <button class="btn-salir" onclick="salir()">Salir</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- STATS -->
+  <div class="stats" id="stats">
+    <div class="stat-card"><div class="stat-valor" id="s-ventas">—</div><div class="stat-label">Ventas realizadas</div></div>
+    <div class="stat-card"><div class="stat-valor" id="s-ingresos">—</div><div class="stat-label">Ingresos totales</div></div>
+    <div class="stat-card"><div class="stat-valor" id="s-pedidos">—</div><div class="stat-label">Pedidos totales</div></div>
+    <div class="stat-card"><div class="stat-valor" id="s-stock">—</div><div class="stat-label">Alertas de stock</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" id="tab-reporte" onclick="cambiarTab('reporte')">📊 Reporte de ventas</button>
+    <button class="tab" id="tab-pedidos"  onclick="cambiarTab('pedidos')">📋 Pedidos</button>
+    <button class="tab" id="tab-ordenes"  onclick="cambiarTab('ordenes')">📦 Órdenes de compra</button>
+    <button class="tab" id="tab-stock"    onclick="cambiarTab('stock')">⚠ Stock bajo</button>
+  </div>
+
+  <!-- REPORTE -->
+  <div id="sec-reporte">
+    <div class="card">
+      <div class="card-title">
+        Historial de ventas
+        <button class="btn-outline" onclick="exportarCSV()">⬇ Exportar CSV</button>
+      </div>
+      <table>
+        <thead><tr><th>#</th><th>Cliente</th><th>Vendedor</th><th>Fecha</th><th>Total</th></tr></thead>
+        <tbody id="tabla-ventas"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PEDIDOS -->
+  <div id="sec-pedidos" style="display:none">
+    <div class="card">
+      <div class="card-title">Todos los pedidos</div>
+      <table>
+        <thead><tr><th>#</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Acción</th></tr></thead>
+        <tbody id="tabla-pedidos"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ÓRDENES DE COMPRA -->
+  <div id="sec-ordenes" style="display:none">
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">Nueva orden de compra</div>
+      <div class="form-orden">
+        <div class="field">
+          <label>Proveedor</label>
+          <select id="sel-proveedor">
+            <option value="1">Fragance World</option>
+            <option value="2">Aroma Import SAC</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Producto</label>
+          <select id="sel-producto"></select>
+        </div>
+        <div class="field">
+          <label>Cantidad</label>
+          <input type="number" id="inp-cantidad" min="1" value="10"/>
+        </div>
+        <div class="field">
+          <label>Precio unitario (S/)</label>
+          <input type="number" id="inp-precio" step="0.01" value="50.00"/>
+        </div>
+      </div>
+      <button class="btn-gold" onclick="crearOrden()">📦 Generar orden de compra</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Historial de órdenes</div>
+      <table>
+        <thead><tr><th>#</th><th>Proveedor</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Acción</th></tr></thead>
+        <tbody id="tabla-ordenes"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- STOCK -->
+  <div id="sec-stock" style="display:none">
+    <div class="card">
+      <div class="card-title">Productos con stock bajo</div>
+      <div id="lista-stock"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = "http://localhost:8000";
+  const token   = localStorage.getItem("token");
+  const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+
+  if (!usuario || !token || usuario.rol !== "gerente") window.location.href = "Login.html";
+  document.getElementById("saludo").textContent = `Hola, ${usuario.nombre}`;
+
+  let ventasData = [];
+
+  // ── TABS ─────────────────────────────────────────────────────
+  function cambiarTab(tab) {
+    ["reporte","pedidos","ordenes","stock"].forEach(t => {
+      document.getElementById(`sec-${t}`).style.display = t === tab ? "block" : "none";
+      document.getElementById(`tab-${t}`).classList.toggle("active", t === tab);
+    });
+    if (tab === "reporte") cargarReporte();
+    if (tab === "pedidos") cargarPedidos();
+    if (tab === "ordenes") cargarOrdenes();
+    if (tab === "stock")   cargarStock();
+  }
+
+  // ── STATS ────────────────────────────────────────────────────
+  async function cargarStats() {
+    try {
+      const [rv, rp, rs] = await Promise.all([
+        fetch(`${API}/api/ventas/reporte`,   { headers: { "Authorization": `Bearer ${token}` } }),
+        fetch(`${API}/api/pedidos/todos`,    { headers: { "Authorization": `Bearer ${token}` } }),
+        fetch(`${API}/api/ventas/stock-bajo`,{ headers: { "Authorization": `Bearer ${token}` } }),
+      ]);
+      const ventas  = await rv.json();
+      const pedidos = await rp.json();
+      const stock   = await rs.json();
+
+      document.getElementById("s-ventas").textContent   = ventas.total_ventas ?? 0;
+      document.getElementById("s-ingresos").textContent = `S/ ${parseFloat(ventas.ingresos_totales || 0).toFixed(0)}`;
+      document.getElementById("s-pedidos").textContent  = pedidos.length ?? 0;
+      document.getElementById("s-stock").textContent    = stock.length ?? 0;
+
+      ventasData = ventas.ventas || [];
+      renderVentas(ventasData);
+    } catch {
+      mostrarToast("Error al cargar estadísticas");
+    }
+  }
+
+  // ── REPORTE ──────────────────────────────────────────────────
+  async function cargarReporte() {
+    if (ventasData.length) { renderVentas(ventasData); return; }
+    const res = await fetch(`${API}/api/ventas/reporte`, { headers: { "Authorization": `Bearer ${token}` } });
+    const data = await res.json();
+    ventasData = data.ventas || [];
+    renderVentas(ventasData);
+  }
+
+  function renderVentas(lista) {
+    document.getElementById("tabla-ventas").innerHTML = lista.length
+      ? lista.map(v => `
+          <tr>
+            <td><strong>#${v.id}</strong></td>
+            <td>${v.cliente}</td>
+            <td>${v.vendedor}</td>
+            <td style="color:var(--muted);font-size:0.82rem">${v.fecha}</td>
+            <td><strong>S/ ${parseFloat(v.total).toFixed(2)}</strong></td>
+          </tr>
+        `).join("")
+      : `<tr><td colspan="5"><div class="empty"><div class="icon">📊</div><p>Sin ventas aún</p></div></td></tr>`;
+  }
+
+  function exportarCSV() {
+    if (!ventasData.length) { mostrarToast("No hay datos para exportar"); return; }
+    const csv = ["ID,Cliente,Vendedor,Fecha,Total",
+      ...ventasData.map(v => `${v.id},${v.cliente},${v.vendedor},${v.fecha},${v.total}`)
+    ].join("\n");
+    const a = document.createElement("a");
+    a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+    a.download = `reporte_ventas_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  }
+
+  // ── PEDIDOS ──────────────────────────────────────────────────
+  async function cargarPedidos() {
+    const res  = await fetch(`${API}/api/pedidos/todos`, { headers: { "Authorization": `Bearer ${token}` } });
+    const data = await res.json();
+    document.getElementById("tabla-pedidos").innerHTML = data.length
+      ? data.map(p => `
+          <tr>
+            <td><strong>#${p.id}</strong></td>
+            <td>${p.cliente}</td>
+            <td style="color:var(--muted);font-size:0.82rem">${p.fecha}</td>
+            <td><strong>S/ ${parseFloat(p.total).toFixed(2)}</strong></td>
+            <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
+            <td>
+              ${p.estado !== "entregado" && p.estado !== "cancelado" ? `
+                <select class="select-estado" onchange="cambiarEstadoPedido(${p.id}, this.value, this)">
+                  <option value="">Cambiar...</option>
+                  <option value="pendiente">Pendiente</option>
+                  <option value="enviado">Enviado</option>
+                  <option value="entregado">Entregado ✓</option>
+                  <option value="cancelado">Cancelado</option>
+                </select>` : `<span style="color:var(--muted)">—</span>`}
+            </td>
+          </tr>
+        `).join("")
+      : `<tr><td colspan="6"><div class="empty"><div class="icon">📋</div><p>Sin pedidos</p></div></td></tr>`;
+  }
+
+  async function cambiarEstadoPedido(id, estado, sel) {
+    if (!estado) return;
+    const res = await fetch(`${API}/api/pedidos/${id}/estado`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ estado })
+    });
+    if (res.ok) { mostrarToast(`✓ Pedido #${id} → ${estado}`); cargarPedidos(); }
+    else { sel.value = ""; mostrarToast("Error al actualizar"); }
+  }
+
+  // ── ÓRDENES ──────────────────────────────────────────────────
+  async function cargarOrdenes() {
+    // Cargar productos para el select
+    const rp = await fetch(`${API}/api/productos/`, { headers: { "Authorization": `Bearer ${token}` } });
+    const prods = await rp.json();
+    document.getElementById("sel-producto").innerHTML = prods.map(p =>
+      `<option value="${p.id}">${p.nombre} (${p.presentacion}) · Stock: ${p.stock}</option>`
+    ).join("");
+
+    const ro = await fetch(`${API}/api/ordenes/`, { headers: { "Authorization": `Bearer ${token}` } });
+    const ordenes = await ro.json();
+    document.getElementById("tabla-ordenes").innerHTML = ordenes.length
+      ? ordenes.map(o => `
+          <tr>
+            <td><strong>#${o.id}</strong></td>
+            <td>${o.proveedor}</td>
+            <td style="color:var(--muted);font-size:0.82rem">${o.fecha}</td>
+            <td><strong>S/ ${parseFloat(o.total).toFixed(2)}</strong></td>
+            <td><span class="badge badge-${o.estado}">${o.estado}</span></td>
+            <td>
+              ${o.estado !== "recibida" ? `
+                <select class="select-estado" onchange="cambiarEstadoOrden(${o.id}, this.value, this)">
+                  <option value="">Cambiar...</option>
+                  <option value="validada">Validada</option>
+                  <option value="recibida">Recibida ✓</option>
+                </select>` : `<span style="color:var(--success)">✓ Completada</span>`}
+            </td>
+          </tr>
+        `).join("")
+      : `<tr><td colspan="6"><div class="empty"><div class="icon">📦</div><p>Sin órdenes aún</p></div></td></tr>`;
+  }
+
+  async function crearOrden() {
+    const proveedor_id    = parseInt(document.getElementById("sel-proveedor").value);
+    const producto_id     = parseInt(document.getElementById("sel-producto").value);
+    const cantidad        = parseInt(document.getElementById("inp-cantidad").value);
+    const precio_unitario = parseFloat(document.getElementById("inp-precio").value);
+    if (!cantidad || !precio_unitario) { mostrarToast("Completa todos los campos"); return; }
+
+    const res = await fetch(`${API}/api/ordenes/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ proveedor_id, items: [{ producto_id, cantidad, precio_unitario }] })
+    });
+    const data = await res.json();
+    if (res.ok) { mostrarToast(`✓ Orden #${data.orden_id} creada`); cargarOrdenes(); }
+    else mostrarToast("Error: " + data.detail);
+  }
+
+  async function cambiarEstadoOrden(id, estado, sel) {
+    if (!estado) return;
+    const res = await fetch(`${API}/api/ordenes/${id}/estado`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ estado })
+    });
+    if (res.ok) { mostrarToast(`✓ Orden #${id} → ${estado}`); cargarOrdenes(); }
+    else { sel.value = ""; mostrarToast("Error al actualizar"); }
+  }
+
+  // ── STOCK ────────────────────────────────────────────────────
+  async function cargarStock() {
+    const res  = await fetch(`${API}/api/ventas/stock-bajo`, { headers: { "Authorization": `Bearer ${token}` } });
+    const data = await res.json();
+    const el   = document.getElementById("lista-stock");
+    el.innerHTML = data.length
+      ? data.map(p => `
+          <div class="stock-item">
+            <div class="stock-item-info">
+              <strong>${p.nombre}</strong>
+              <small>${p.codigo} · Mínimo requerido: ${p.stock_minimo}</small>
+            </div>
+            <div class="stock-num">${p.stock} uds.</div>
+          </div>
+        `).join("")
+      : `<div class="empty"><div class="icon">✅</div><p>Todos los productos tienen stock suficiente</p></div>`;
+  }
+
+  function salir() { localStorage.clear(); window.location.href = "Login.html"; }
+
+  function mostrarToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2800);
+  }
+
+  cargarStats();
+</script>
+</body>
+</html>

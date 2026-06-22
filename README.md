@@ -2,7 +2,7 @@ Readme · MD
 Copiar
 
 # 🌸 Sistema de Gestión de Ventas — Perfumería
- 
+
  
 ## 📋 Descripción
  

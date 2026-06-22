@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel Vendedor | Perfumería</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #c9a84c; --gold2: #e8c97a;
+      --dark: #1a1612; --dark2: #241f19;
+      --cream: #f5f0e8; --muted: #9a9080;
+      --success: #1e8449; --error: #c0392b;
+    }
+    body { font-family: 'Jost', sans-serif; background: #f0ebe0; color: var(--dark); min-height: 100vh; }
+
+    /* NAVBAR */
+    .navbar {
+      background: var(--dark2); padding: 14px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .navbar .logo { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--gold); }
+    .navbar .rol-badge {
+      background: rgba(201,168,76,0.15); color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.3);
+      padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; letter-spacing: 0.1em;
+    }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+    .nav-right span { color: var(--muted); font-size: 0.85rem; }
+    .btn-salir {
+      background: transparent; border: 1px solid rgba(201,168,76,0.3);
+      color: var(--muted); border-radius: 8px; padding: 7px 14px;
+      cursor: pointer; font-size: 0.82rem; font-family: 'Jost', sans-serif;
+      transition: all 0.2s;
+    }
+    .btn-salir:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* LAYOUT */
+    .container { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+
+    /* TABS */
+    .tabs {
+      display: flex; gap: 4px;
+      background: white; border-radius: 10px; padding: 4px;
+      margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      width: fit-content;
+    }
+    .tab {
+      padding: 9px 20px; border: none; border-radius: 7px;
+      background: transparent; color: var(--muted);
+      font-family: 'Jost', sans-serif; font-size: 0.88rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .tab.active { background: var(--dark2); color: var(--cream); }
+
+    /* CARD */
+    .card {
+      background: white; border-radius: 12px; padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px;
+    }
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem; color: var(--dark2); margin-bottom: 18px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    /* TABLA */
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { border-bottom: 2px solid #f0ebe0; }
+    th { padding: 10px 14px; text-align: left; font-size: 0.78rem;
+         font-weight: 500; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+    td { padding: 13px 14px; font-size: 0.88rem; border-bottom: 1px solid #f8f5f0; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #faf8f4; }
+
+    /* BADGES */
+    .badge {
+      padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500;
+      display: inline-block;
+    }
+    .badge-pendiente  { background: #fef3cd; color: #856404; }
+    .badge-enviado    { background: #cfe2ff; color: #084298; }
+    .badge-entregado  { background: #d1e7dd; color: #0f5132; }
+    .badge-cancelado  { background: #f8d7da; color: #842029; }
+
+    /* SELECT ESTADO */
+    .select-estado {
+      padding: 6px 10px; border: 1px solid #e0e0e0;
+      border-radius: 7px; font-family: 'Jost', sans-serif;
+      font-size: 0.82rem; background: white; cursor: pointer; outline: none;
+    }
+    .select-estado:focus { border-color: var(--gold); }
+
+    /* FILTROS */
+    .filtros {
+      display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .filtros input, .filtros select {
+      padding: 9px 14px; border: 1px solid #e0ddd8;
+      border-radius: 8px; font-family: 'Jost', sans-serif;
+      font-size: 0.85rem; outline: none; background: white;
+    }
+    .filtros input:focus, .filtros select:focus { border-color: var(--gold); }
+    .filtros input { flex: 1; min-width: 200px; }
+
+    /* STOCK BAJO */
+    .stock-list { display: flex; flex-direction: column; gap: 10px; }
+    .stock-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: #fff8f0;
+      border: 1px solid #fde8c8; border-radius: 8px;
+    }
+    .stock-item-info strong { display: block; font-size: 0.9rem; color: var(--dark2); }
+    .stock-item-info small { color: var(--muted); font-size: 0.78rem; }
+    .stock-num {
+      font-size: 1.3rem; font-weight: 600;
+      color: var(--error); font-family: 'Cormorant Garamond', serif;
+    }
+
+    /* BUSQUEDA PRODUCTO */
+    .prod-mini {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: #faf8f4;
+      border: 1px solid #e8e3db; border-radius: 8px; margin-bottom: 8px;
+    }
+    .prod-mini-info strong { display: block; font-size: 0.9rem; }
+    .prod-mini-info small { color: var(--muted); font-size: 0.78rem; }
+    .prod-mini-precio {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem; font-weight: 600; color: var(--dark2);
+    }
+
+    /* EMPTY */
+    .empty { text-align: center; padding: 40px; color: var(--muted); }
+    .empty .icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--dark2); color: var(--cream);
+      padding: 12px 20px; border-radius: 10px; font-size: 0.88rem;
+      z-index: 999; border-left: 3px solid var(--gold);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s; pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div style="display:flex;align-items:center;gap:14px">
+    <div class="logo">🌸 Essence & Co.</div>
+    <div class="rol-badge">VENDEDOR</div>
+  </div>
+  <div class="nav-right">
+    <span id="saludo"></span>
+    <button class="btn-salir" onclick="salir()">Salir</button>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" id="tab-pedidos" onclick="cambiarTab('pedidos')">📋 Pedidos</button>
+    <button class="tab" id="tab-stock"   onclick="cambiarTab('stock')">⚠ Stock bajo</button>
+    <button class="tab" id="tab-buscar"  onclick="cambiarTab('buscar')">🔍 Productos</button>
+  </div>
+
+  <!-- SECCIÓN PEDIDOS -->
+  <div id="sec-pedidos">
+    <div class="card">
+      <div class="card-title">
+        Gestión de pedidos
+        <span id="total-pedidos" style="font-size:0.85rem;color:var(--muted);font-family:'Jost',sans-serif"></span>
+      </div>
+      <div class="filtros">
+        <input type="text" id="buscar-pedido" placeholder="🔍 Buscar por cliente o #pedido..." oninput="filtrarPedidos()"/>
+        <select id="filtro-estado" onchange="filtrarPedidos()">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="enviado">Enviado</option>
+          <option value="entregado">Entregado</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+      </div>
+      <div id="msg-pedidos"></div>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Cliente</th><th>Fecha</th><th>Total</th><th>Estado</th><th>Acción</th></tr>
+        </thead>
+        <tbody id="tabla-pedidos"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECCIÓN STOCK -->
+  <div id="sec-stock" style="display:none">
+    <div class="card">
+      <div class="card-title">Productos con stock bajo</div>
+      <div id="lista-stock"></div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN BUSCAR PRODUCTO -->
+  <div id="sec-buscar" style="display:none">
+    <div class="card">
+      <div class="card-title">Buscar productos</div>
+      <input type="text" id="input-buscar-prod"
+        placeholder="🔍 Nombre, código o categoría..."
+        style="width:100%;padding:10px 14px;border:1px solid #e0ddd8;border-radius:8px;font-family:'Jost',sans-serif;font-size:0.9rem;outline:none;margin-bottom:16px"
+        oninput="buscarProducto()"/>
+      <div id="lista-productos"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = "http://localhost:8000";
+  const token   = localStorage.getItem("token");
+  const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
+
+  if (!usuario || !token || usuario.rol !== "vendedor") window.location.href = "Login.html";
+  document.getElementById("saludo").textContent = `Hola, ${usuario.nombre}`;
+
+  let pedidos = [];
+  let todosProductos = [];
+
+  // ── TABS ────────────────────────────────────────────────────
+  function cambiarTab(tab) {
+    ["pedidos","stock","buscar"].forEach(t => {
+      document.getElementById(`sec-${t}`).style.display = t === tab ? "block" : "none";
+      document.getElementById(`tab-${t}`).classList.toggle("active", t === tab);
+    });
+    if (tab === "stock")  cargarStock();
+    if (tab === "buscar") cargarTodosProductos();
+  }
+
+  // ── PEDIDOS ─────────────────────────────────────────────────
+  async function cargarPedidos() {
+    try {
+      const res = await fetch(`${API}/api/pedidos/todos`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      pedidos = await res.json();
+      renderPedidos(pedidos);
+      document.getElementById("total-pedidos").textContent = `${pedidos.length} pedido(s)`;
+    } catch {
+      mostrarToast("Error al cargar pedidos");
+    }
+  }
+
+  function renderPedidos(lista) {
+    const tbody = document.getElementById("tabla-pedidos");
+    if (!lista.length) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="icon">📋</div><p>No hay pedidos</p></div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = lista.map(p => `
+      <tr>
+        <td><strong>#${p.id}</strong></td>
+        <td>${p.cliente}</td>
+        <td style="color:var(--muted);font-size:0.82rem">${p.fecha}</td>
+        <td><strong>S/ ${parseFloat(p.total).toFixed(2)}</strong></td>
+        <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
+        <td>
+          ${p.estado !== "entregado" && p.estado !== "cancelado" ? `
+            <select class="select-estado" onchange="cambiarEstado(${p.id}, this.value, this)">
+              <option value="">Cambiar...</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="enviado">Enviado</option>
+              <option value="entregado">Entregado ✓</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          ` : `<span style="color:var(--muted);font-size:0.82rem">—</span>`}
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  function filtrarPedidos() {
+    const texto  = document.getElementById("buscar-pedido").value.toLowerCase();
+    const estado = document.getElementById("filtro-estado").value;
+    const res = pedidos.filter(p =>
+      (p.cliente.toLowerCase().includes(texto) || String(p.id).includes(texto)) &&
+      (!estado || p.estado === estado)
+    );
+    renderPedidos(res);
+  }
+
+  async function cambiarEstado(id, estado, sel) {
+    if (!estado) return;
+    if (!confirm(`¿Cambiar pedido #${id} a "${estado}"?`)) { sel.value = ""; return; }
+    try {
+      const res = await fetch(`${API}/api/pedidos/${id}/estado`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ estado })
+      });
+      const data = await res.json();
+      if (!res.ok) { mostrarToast("Error: " + data.detail); return; }
+      mostrarToast(`✓ Pedido #${id} → ${estado}`);
+      cargarPedidos();
+    } catch {
+      mostrarToast("Error de conexión");
+    }
+  }
+
+  // ── STOCK BAJO ──────────────────────────────────────────────
+  async function cargarStock() {
+    try {
+      const res  = await fetch(`${API}/api/ventas/stock-bajo`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const el   = document.getElementById("lista-stock");
+      if (!data.length) {
+        el.innerHTML = `<div class="empty"><div class="icon">✅</div><p>Todos los productos tienen stock suficiente</p></div>`;
+        return;
+      }
+      el.innerHTML = `<div class="stock-list">${data.map(p => `
+        <div class="stock-item">
+          <div class="stock-item-info">
+            <strong>${p.nombre}</strong>
+            <small>${p.codigo} · Mínimo: ${p.stock_minimo}</small>
+          </div>
+          <div class="stock-num">${p.stock} uds.</div>
+        </div>
+      `).join("")}</div>`;
+    } catch {
+      mostrarToast("Error al cargar stock");
+    }
+  }
+
+  // ── BUSCAR PRODUCTO ─────────────────────────────────────────
+  async function cargarTodosProductos() {
+    if (todosProductos.length) return;
+    const res = await fetch(`${API}/api/productos/`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    todosProductos = await res.json();
+    renderProductos(todosProductos);
+  }
+
+  function buscarProducto() {
+    const texto = document.getElementById("input-buscar-prod").value.toLowerCase();
+    const res = todosProductos.filter(p =>
+      p.nombre.toLowerCase().includes(texto) ||
+      p.codigo.toLowerCase().includes(texto) ||
+      (p.categoria || "").toLowerCase().includes(texto)
+    );
+    renderProductos(res);
+  }
+
+  function renderProductos(lista) {
+    const el = document.getElementById("lista-productos");
+    if (!lista.length) { el.innerHTML = `<div class="empty"><div class="icon">🔍</div><p>Sin resultados</p></div>`; return; }
+    el.innerHTML = lista.map(p => `
+      <div class="prod-mini">
+        <div class="prod-mini-info">
+          <strong>${p.nombre} <span style="color:var(--muted);font-weight:400">${p.presentacion}</span></strong>
+          <small>${p.codigo} · ${p.categoria || ""} · Stock: <strong style="color:${p.stock_bajo?'var(--error)':'var(--success)'}">${p.stock}</strong></small>
+        </div>
+        <div class="prod-mini-precio">S/ ${parseFloat(p.precio).toFixed(2)}</div>
+      </div>
+    `).join("");
+  }
+
+  function salir() { localStorage.clear(); window.location.href = "Login.html"; }
+
+  function mostrarToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2800);
+  }
+
+  cargarPedidos();
+</script>
+</body>
+</html>

@@ -108,6 +108,8 @@ class Venta(Base):
     fecha_venta    = Column(DateTime, default=datetime.utcnow)
  
     pedido = relationship("Pedido", back_populates="venta")
+    facturas = relationship("Factura", back_populates="venta")
+
  
  
 class OrdenCompra(Base):
@@ -136,6 +138,18 @@ class DetalleOrden(Base):
  
     orden    = relationship("OrdenCompra", back_populates="detalles")
     producto = relationship("Producto")
+
+class Factura(Base):
+    __tablename__ = "facturas"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    venta_id   = Column(Integer, ForeignKey("ventas.id"), nullable=False)
+    numero     = Column(String(30), unique=True, nullable=False)
+    fecha      = Column(DateTime, default=datetime.utcnow)
+    total      = Column(DECIMAL(10, 2), nullable=False)
+    tipo       = Column(Enum("venta", "compra"), default="venta")
+
+    venta = relationship("Venta", back_populates="facturas")
  
  
 # ================================================================
@@ -154,3 +168,5 @@ class TokenResponse(BaseModel):
     nombre:       str
     id:           int
  
+
+DetalleOrdenCompra = DetalleOrden

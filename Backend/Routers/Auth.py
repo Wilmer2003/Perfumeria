@@ -32,7 +32,19 @@ def crear_token(data: dict) -> str:
     payload["exp"] = datetime.utcnow() + timedelta(minutes=EXPIRE_MIN)
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
  
- 
+def verificar_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return {
+            "id":     int(payload.get("sub")),
+            "rol":    payload.get("rol"),
+            "nombre": payload.get("nombre")
+        }
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido o expirado."
+        ) 
 # ================================================================
 #  POST /api/auth/login
 # ================================================================
