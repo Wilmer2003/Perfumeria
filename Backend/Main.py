@@ -38,9 +38,9 @@ app.include_router(ventas_router)
 app.include_router(ordenes_router)
  
 # ── Servir el frontend estático (opcional) ─────────────────────
-frontend_path = os.path.join(os.path.dirname(__file__), "..", "Frontend")
-if os.path.exists(frontend_path):
-    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
+#frontend_path = os.path.join(os.path.dirname(__file__), "..", "Frontend")
+#if os.path.exists(frontend_path):
+#    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
  
 @app.get("/api/health")
 def health():
