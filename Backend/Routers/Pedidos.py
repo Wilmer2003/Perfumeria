@@ -44,8 +44,7 @@ def crear_pedido(data: PedidoIn, db: Session = Depends(get_db), usuario=Depends(
             pedido_id=pedido.id,
             producto_id=d["producto"].id,
             cantidad=d["cantidad"],
-            precio_unitario=d["precio_unitario"],
-            subtotal=d["subtotal"]
+            precio_unit=d["precio_unitario"]
         )
         db.add(det)
         d["producto"].stock -= d["cantidad"]
@@ -88,7 +87,8 @@ def cambiar_estado(id: int, body: dict, db: Session = Depends(get_db), usuario=D
         venta_existente = db.query(Venta).filter(Venta.pedido_id == id).first()
         if not venta_existente:
             venta = Venta(pedido_id=pedido.id, vendedor_id=usuario["id"],
-                          cliente_id=pedido.cliente_id, total=pedido.total)
+                          cliente_id=pedido.cliente_id, total=pedido.total,
+                          numero_factura=f"F-{datetime.now().strftime('%Y%m%d')}-{pedido.id:04d}")
             db.add(venta)
             db.flush()
             numero = f"F-{datetime.now().strftime('%Y%m%d')}-{venta.id:04d}"

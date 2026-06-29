@@ -168,6 +168,103 @@
     .btn-agregar:hover { background: var(--gold); color: var(--dark); }
     .btn-agregar:disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
 
+    /* BOTÓN VER DETALLES */
+    .btn-detalles {
+      width: 100%; margin-top: 8px;
+      background: transparent; color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.4);
+      border-radius: 8px;
+      padding: 8px; font-family: 'Jost', sans-serif;
+      font-size: 0.82rem; font-weight: 500; cursor: pointer;
+      transition: all 0.2s; letter-spacing: 0.05em;
+    }
+    .btn-detalles:hover { background: rgba(201,168,76,0.1); border-color: var(--gold); }
+
+    /* MODAL DETALLES */
+    .modal-detalles {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65); z-index: 300;
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-detalles.show { display: flex; }
+    .modal-detalles-panel {
+      background: white; border-radius: 16px;
+      width: 100%; max-width: 480px;
+      overflow: hidden;
+      animation: fadeUp 0.25s ease;
+    }
+    @keyframes fadeUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-detalles-img {
+      background: linear-gradient(135deg, var(--dark2), var(--dark3));
+      height: 180px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem;
+      position: relative;
+    }
+    .modal-detalles-img .btn-cerrar-modal {
+      position: absolute; top: 12px; right: 14px;
+      background: rgba(255,255,255,0.15); border: none;
+      color: white; border-radius: 50%;
+      width: 32px; height: 32px; font-size: 1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .modal-detalles-img .btn-cerrar-modal:hover { background: rgba(255,255,255,0.3); }
+    .modal-detalles-body { padding: 24px; }
+    .modal-detalles-cat {
+      font-size: 0.72rem; color: var(--gold);
+      letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .modal-detalles-nombre {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.7rem; font-weight: 600;
+      color: var(--dark2); margin-bottom: 4px;
+    }
+    .modal-detalles-codigo { font-size: 0.78rem; color: var(--muted); margin-bottom: 12px; }
+    .modal-detalles-desc {
+      font-size: 0.88rem; color: #555;
+      line-height: 1.6; margin-bottom: 16px;
+      padding-bottom: 16px; border-bottom: 1px solid #f0f0f0;
+    }
+    .modal-detalles-info {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; margin-bottom: 20px;
+    }
+    .modal-info-item label {
+      font-size: 0.72rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      display: block; margin-bottom: 3px;
+    }
+    .modal-info-item span {
+      font-size: 0.92rem; color: var(--dark2); font-weight: 500;
+    }
+    .modal-detalles-precio {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem; font-weight: 600; color: var(--dark2);
+      margin-bottom: 16px;
+    }
+    .modal-detalles-precio small { font-size: 0.9rem; color: var(--muted); margin-left: 4px; }
+    .modal-detalles-actions { display: flex; gap: 10px; }
+    .modal-detalles-actions .btn-agregar { margin-top: 0; }
+    .modal-detalles-actions .btn-cerrar-abajo {
+      flex: 0 0 auto;
+      background: transparent; border: 1px solid #ddd;
+      border-radius: 8px; padding: 10px 16px;
+      font-family: 'Jost', sans-serif; font-size: 0.85rem;
+      cursor: pointer; color: var(--muted); transition: all 0.2s;
+    }
+    .modal-detalles-actions .btn-cerrar-abajo:hover { border-color: var(--muted); color: var(--dark2); }
+
+    .stock-minimo-badge {
+      font-size: 0.72rem; color: #e67e22;
+      background: #fef5e7; border: 1px solid #f0a500;
+      border-radius: 6px; padding: 4px 8px;
+      margin-bottom: 8px; display: flex; align-items: center; gap: 4px;
+      font-weight: 500;
+    }
+
     /* EMPTY STATE */
     .empty {
       text-align: center; padding: 60px 20px; color: var(--muted);
@@ -300,12 +397,45 @@
   </div>
 </div>
 
+<!-- MODAL DETALLES -->
+<div class="modal-detalles" id="modal-detalles" onclick="cerrarDetalles(event)">
+  <div class="modal-detalles-panel" onclick="event.stopPropagation()">
+    <div class="modal-detalles-img">
+      🌸
+      <button class="btn-cerrar-modal" onclick="cerrarDetalles()">✕</button>
+    </div>
+    <div class="modal-detalles-body">
+      <div class="modal-detalles-cat" id="d-categoria"></div>
+      <div class="modal-detalles-nombre" id="d-nombre"></div>
+      <div class="modal-detalles-codigo" id="d-codigo"></div>
+      <div class="modal-detalles-desc" id="d-descripcion"></div>
+      <div class="modal-detalles-info">
+        <div class="modal-info-item">
+          <label>Presentación</label>
+          <span id="d-presentacion"></span>
+        </div>
+        <div class="modal-info-item">
+          <label>Stock disponible</label>
+          <span id="d-stock"></span>
+        </div>
+      </div>
+      <div class="modal-detalles-precio">
+        <span id="d-precio"></span><small>soles</small>
+      </div>
+      <div class="modal-detalles-actions">
+        <button class="btn-agregar" id="d-btn-agregar" style="flex:1">+ Agregar al carrito</button>
+        <button class="btn-cerrar-abajo" onclick="cerrarDetalles()">Seguir comprando</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <!-- MODAL CARRITO -->
-<div class="overlay" id="overlay" onclick="cerrarCarrito(event)">
-  <div class="carrito-panel" onclick="event.stopPropagation()">
+<div class="overlay" id="overlay">
+  <div class="carrito-panel">
     <div class="carrito-header">
       <h3>Tu carrito</h3>
       <button class="btn-cerrar" onclick="cerrarCarrito()">✕</button>
@@ -364,6 +494,7 @@
           <div class="prod-codigo">${p.codigo}</div>
           <div class="prod-desc">${p.descripcion || "Fragancia exclusiva de nuestra colección."}</div>
           ${p.stock_bajo ? `<div class="stock-badge">⚠ Pocas unidades (${p.stock} disponibles)</div>` : ""}
+          ${p.stock > 0 && p.stock <= 5 ? `<div class="stock-minimo-badge">⚠ Stock mínimo alcanzado</div>` : ""}
           <div class="prod-footer">
             <div>
               <div class="prod-precio">S/ ${parseFloat(p.precio).toFixed(2)}<span>soles</span></div>
@@ -372,8 +503,11 @@
           </div>
           ${p.stock === 0
             ? `<button class="btn-agregar" disabled>Sin stock</button>`
-            : `<button class="btn-agregar" onclick="agregar(${p.id})">+ Agregar al carrito</button>`
+            : p.stock <= 5
+              ? `<button class="btn-agregar" disabled style="background:#e67e22;cursor:not-allowed;">⚠ Stock mínimo</button>`
+              : `<button class="btn-agregar" onclick="agregar(${p.id})">+ Agregar al carrito</button>`
           }
+          <button class="btn-detalles" onclick="verDetalles(${p.id})">Ver detalles</button>
         </div>
       </div>
     `).join("");
@@ -391,12 +525,20 @@
 
   function agregar(id) {
     const p = productos.find(x => x.id === id);
-    const en = carrito.find(x => x.producto_id === id);
+    if (p.stock <= 5) {
+      mostrarToast(`⚠ Stock mínimo alcanzado para ${p.nombre}`);
+      return;
+    }
+    _agregarAlCarrito(p);
+  }
+
+  function _agregarAlCarrito(p) {
+    const en = carrito.find(x => x.producto_id === p.id);
     if (en) {
       if (en.cantidad >= p.stock) { mostrarToast(`Solo hay ${p.stock} unidades`); return; }
       en.cantidad++;
     } else {
-      carrito.push({ producto_id: id, cantidad: 1, nombre: p.nombre,
+      carrito.push({ producto_id: p.id, cantidad: 1, nombre: p.nombre,
                      precio: parseFloat(p.precio), presentacion: p.presentacion });
     }
     guardarCarrito();
@@ -415,9 +557,13 @@
   }
 
   function cerrarCarrito(e) {
-    if (!e || e.target === document.getElementById("overlay"))
-      document.getElementById("overlay").classList.remove("show");
+    document.getElementById("overlay").classList.remove("show");
   }
+
+  // Cerrar solo si click fue en el fondo oscuro, no en el panel
+  document.getElementById("overlay").addEventListener("click", function(e) {
+    if (e.target === this) cerrarCarrito();
+  });
 
   function renderCarrito() {
     const el = document.getElementById("carrito-contenido");
@@ -434,9 +580,9 @@
             <small>${c.presentacion} · S/ ${c.precio.toFixed(2)} c/u</small>
           </div>
           <div class="carrito-item-controles">
-            <button class="btn-qty" onclick="cambiarQty(${i}, -1)">−</button>
+            <button class="btn-qty" onclick="event.stopPropagation(); cambiarQty(${i}, -1)">−</button>
             <span class="qty-num">${c.cantidad}</span>
-            <button class="btn-qty" onclick="cambiarQty(${i}, 1)">+</button>
+            <button class="btn-qty" onclick="event.stopPropagation(); cambiarQty(${i}, 1)">+</button>
           </div>
           <span class="item-precio">S/ ${(c.precio * c.cantidad).toFixed(2)}</span>
           <button class="btn-quitar" onclick="quitarItem(${i})">✕</button>
@@ -452,10 +598,18 @@
   }
 
   function cambiarQty(i, delta) {
-    carrito[i].cantidad += delta;
-    if (carrito[i].cantidad <= 0) carrito.splice(i, 1);
+    if (!carrito[i]) return;
+    const producto = productos.find(x => x.id === carrito[i].producto_id);
+    const nuevaCantidad = carrito[i].cantidad + delta;
+    if (nuevaCantidad < 0) return;
+    if (producto && nuevaCantidad > producto.stock) {
+      mostrarToast(`⚠ Solo hay ${producto.stock} unidades disponibles de ${producto.nombre}`);
+      return;
+    }
+    carrito[i].cantidad = nuevaCantidad;
     guardarCarrito();
     renderCarrito();
+    document.getElementById("overlay").classList.add("show");
   }
 
   function quitarItem(i) {
@@ -465,7 +619,15 @@
   }
 
   async function confirmarPedido() {
-    if (!carrito.length) return;
+    if (!carrito.length) {
+      mostrarToast("⚠ Agrega productos al carrito antes de confirmar");
+      return;
+    }
+    const sinCantidad = carrito.every(c => c.cantidad === 0);
+    if (sinCantidad) {
+      mostrarToast("⚠ Agrega productos al carrito antes de confirmar");
+      return;
+    }
     try {
       const res = await fetch(`${API}/api/pedidos/`, {
         method: "POST",
@@ -489,6 +651,33 @@
     t.textContent = msg;
     t.classList.add("show");
     setTimeout(() => t.classList.remove("show"), 2800);
+  }
+
+  function verDetalles(id) {
+    const p = productos.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById("d-categoria").textContent = p.categoria || "General";
+    document.getElementById("d-nombre").textContent = p.nombre;
+    document.getElementById("d-codigo").textContent = p.codigo;
+    document.getElementById("d-descripcion").textContent = p.descripcion || "Fragancia exclusiva de nuestra colección.";
+    document.getElementById("d-presentacion").textContent = p.presentacion;
+    document.getElementById("d-stock").textContent = p.stock === 0 ? "Sin stock" : `${p.stock} unidades`;
+    document.getElementById("d-precio").textContent = `S/ ${parseFloat(p.precio).toFixed(2)}`;
+    const btnAgregar = document.getElementById("d-btn-agregar");
+    if (p.stock === 0) {
+      btnAgregar.disabled = true;
+      btnAgregar.textContent = "Sin stock";
+    } else {
+      btnAgregar.disabled = false;
+      btnAgregar.textContent = "+ Agregar al carrito";
+      btnAgregar.onclick = () => { _agregarAlCarrito(p); mostrarToast(`✓ ${p.nombre} agregado`); };
+    }
+    document.getElementById("modal-detalles").classList.add("show");
+  }
+
+  function cerrarDetalles(e) {
+    if (!e || e.target === document.getElementById("modal-detalles"))
+      document.getElementById("modal-detalles").classList.remove("show");
   }
 
   function salir() {
